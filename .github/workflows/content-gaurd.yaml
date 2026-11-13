@@ -1,0 +1,19 @@
+name: ASF Free Content Guard Check
+
+on:
+  push:
+    branches: [ main, feature-branch, fix/asf-free-content-guard ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  guard-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run Content Guard Script
+        run: |
+          echo "Running ASF Free Content Guard checks..."
+          python scripts/content_guard.py
