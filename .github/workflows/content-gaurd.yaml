@@ -2,18 +2,38 @@ name: ASF Free Content Guard Check
 
 on:
   push:
-    branches: [ main, feature-branch, fix/asf-free-content-guard ]
+    branches: [main, feature-branch, fix/asf-free-content-guard, feature/content-guard]
   pull_request:
-    branches: [ main ]
+    branches: [main]
+
+permissions:
+  contents: read
 
 jobs:
   guard-check:
+    name: guard-check (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set Up Python
+        uses: actions/setup-python@v7.1.0
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Check Python Syntax
+        run: python -m py_compile .github/scripts/content_guard.py tests/test_content_guard.py
+
+      - name: Run Regression Tests
+        run: python -m unittest discover -s tests -v
 
       - name: Run Content Guard Script
-        run: |
-          echo "Running ASF Free Content Guard checks..."
-          python scripts/content_guard.py
+        run: python .github/scripts/content_guard.py .
